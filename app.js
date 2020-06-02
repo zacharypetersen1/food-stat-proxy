@@ -5,7 +5,41 @@ var { CLIENT_ID, CLIENT_SECRET } = require("./clientCredentials");
 var path = require('path');
 var logger = require('morgan');
 
-var indexRouter = require('./routes/index');
+// Needs to be refreshed every 24 hours
+var access_token = "";
+function getToken() {
+  var options = {
+    method: 'POST',
+    url: 'https://oauth.fatsecret.com/connect/token',
+    method : 'POST',
+    auth : {
+      user : CLIENT_ID,
+      password : CLIENT_SECRET
+    },
+    headers: { 'content-type': 'application/json'},
+    form: {
+      'grant_type': 'client_credentials',
+      'scope' : 'basic'
+    },
+    json: true
+  };
+
+  request(options, function (error, response, body) {
+    if (error) {
+      // Try again in ten seconds
+      setTimeout(getToken, 10000);
+    }
+    else{
+      // Save token
+      access_token = body.access_token;
+      // Refresh token before it expires
+      setTimeout(getToken, (body.expires_in-600) * 1000);
+    }
+  });
+}
+
+// Fetch token
+getToken();
 
 var app = express();
 
@@ -14,22 +48,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
-});
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
-
-  // render the error page
-  res.status(err.status || 500);
-  res.render('error');
+app.get('/', function(req, res){
+  res.send(access_token);
 });
 
 module.exports = app;
