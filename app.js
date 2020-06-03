@@ -30,13 +30,27 @@ function getToken() {
       setTimeout(getToken, 10000);
     }
     else{
-      // Save token
       access_token = body.access_token;
       // Refresh token before it expires
       setTimeout(getToken, (body.expires_in-600) * 1000);
     }
   });
 }
+
+/*setTimeout(function(){
+    // Save token
+    var options2 = {
+      method: 'POST',
+      url: 'https://platform.fatsecret.com/rest/server.api?method=foods.search&search_expression=toast&format=json',
+      headers: { 'content-type': 'application/json', 'authorization': "Bearer " + access_token},
+      json: true
+    };
+    request(options2, function(error, response, body2){
+      console.log("hi");
+      console.log(body2);
+    });
+  }, 6000);*/
+
 
 // Fetch token
 getToken();
@@ -48,8 +62,18 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.get('/', function(req, res){
-  res.send(access_token);
+app.post("/fatsecret", (req, res) => {
+  const params = req.url.split("?")[1];
+  console.log(params);
+  const options = {
+    method: 'POST',
+    url: 'https://platform.fatsecret.com/rest/server.api?' + params,
+    headers: { 'content-type': 'application/json', 'authorization': "Bearer " + access_token},
+    json: true
+  };
+  request(options, (error, response, body) => {
+    res.send(body);
+  });
 });
 
 module.exports = app;
