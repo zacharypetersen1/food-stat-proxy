@@ -1,14 +1,11 @@
-var createError = require('http-errors');
-var express = require('express');
-var request = require("request");
-var { CLIENT_ID, CLIENT_SECRET } = require("./clientCredentials");
-var path = require('path');
-var logger = require('morgan');
+const express = require('express');
+const request = require("request");
+const { CLIENT_ID, CLIENT_SECRET } = require("./clientCredentials");
 
 // Needs to be refreshed every 24 hours
-var access_token = "";
+let access_token = "";
 function getToken() {
-  var options = {
+  const options = {
     method: 'POST',
     url: 'https://oauth.fatsecret.com/connect/token',
     method : 'POST',
@@ -24,7 +21,7 @@ function getToken() {
     json: true
   };
 
-  request(options, function (error, response, body) {
+  request(options, (error, response, body) => {
     if (error) {
       // Try again in ten seconds
       setTimeout(getToken, 10000);
@@ -37,30 +34,10 @@ function getToken() {
   });
 }
 
-/*setTimeout(function(){
-    // Save token
-    var options2 = {
-      method: 'POST',
-      url: 'https://platform.fatsecret.com/rest/server.api?method=foods.search&search_expression=toast&format=json',
-      headers: { 'content-type': 'application/json', 'authorization': "Bearer " + access_token},
-      json: true
-    };
-    request(options2, function(error, response, body2){
-      console.log("hi");
-      console.log(body2);
-    });
-  }, 6000);*/
-
-
 // Fetch token
 getToken();
 
-var app = express();
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(express.static(path.join(__dirname, 'public')));
+let app = express();
 
 app.post("/fatsecret", (req, res) => {
   const params = req.url.split("?")[1];
