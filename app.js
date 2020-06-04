@@ -1,5 +1,6 @@
 const express = require('express');
-const request = require("request");
+const request = require('request');
+const cors = require('cors');
 const { CLIENT_ID, CLIENT_SECRET } = require("./clientCredentials");
 
 // Needs to be refreshed every 24 hours
@@ -38,6 +39,8 @@ function getToken() {
 getToken();
 
 let app = express();
+
+app.use(cors());
 
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
