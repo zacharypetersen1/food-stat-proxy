@@ -49,6 +49,7 @@ app.post("/fatsecret", (req, res) => {
     json: true
   };
   request(options, (error, response, body) => {
+    res.header('Access-Control-Allow-Origin', '*');
     res.send(body);
   });
 });
