@@ -39,6 +39,11 @@ getToken();
 
 let app = express();
 
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  next();
+});
+
 app.post("/fatsecret", (req, res) => {
   const params = req.url.split("?")[1];
   console.log(params);
@@ -49,7 +54,6 @@ app.post("/fatsecret", (req, res) => {
     json: true
   };
   request(options, (error, response, body) => {
-    res.header('Access-Control-Allow-Origin', '*');
     res.send(body);
   });
 });
